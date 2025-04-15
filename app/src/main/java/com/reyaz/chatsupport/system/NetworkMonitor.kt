@@ -13,7 +13,7 @@ class NetworkMonitor(
     context: Context,
     globalCoroutineScope: CoroutineScope,
 ) {
-    private val _isConnected = MutableStateFlow(false)
+    private val _isConnected = MutableStateFlow(true)
     val isConnected = _isConnected.asStateFlow()
 
     private val connectivityManager by lazy {

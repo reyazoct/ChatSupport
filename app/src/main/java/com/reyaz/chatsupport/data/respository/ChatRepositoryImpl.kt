@@ -50,7 +50,6 @@ class ChatRepositoryImpl(
             }
         }
         globalCoroutineScope.launch {
-            networkMonitor.start()
             networkMonitor.isConnected.collectLatest {
                 if (it) {
                     webSocketListener.startService()

@@ -8,9 +8,13 @@ import com.reyaz.chatsupport.base.UiData
 import com.reyaz.chatsupport.data.dto.ChatMessage
 import com.reyaz.chatsupport.domain.model.UserChatMessage
 import com.reyaz.chatsupport.domain.repository.ChatRepository
+import com.reyaz.chatsupport.system.NetworkMonitor
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.getKoin
 import kotlin.getValue
@@ -20,9 +24,17 @@ class UserChatViewModel(
 ) : ViewModel() {
     private val userId by lazy { checkNotNull(savedStateHandle.get<Int>("userId")) }
     private val repository: ChatRepository by getKoin().inject()
+    private val networkMonitor: NetworkMonitor by getKoin().inject()
 
     private val _messagesList = MutableStateFlow<UiData<List<UserChatMessage>>>(UiData.Loading())
-    val messagesList = _messagesList.asStateFlow()
+    val messagesList = _messagesList.combine(networkMonitor.isConnected) { uiData, isConnected ->
+        if (!isConnected) UiData.Error(Exception("No internet connection"))
+        else uiData
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = UiData.Loading(),
+    )
 
     private val _textFieldValue = MutableStateFlow(TextFieldValue())
     val textFieldValue = _textFieldValue.asStateFlow()
