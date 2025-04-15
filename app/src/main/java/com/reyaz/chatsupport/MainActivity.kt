@@ -10,9 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.reyaz.chatsupport.di.allModules
 import com.reyaz.chatsupport.navigation.ChatListNavigation
+import com.reyaz.chatsupport.navigation.UserChatNavigation
 import com.reyaz.chatsupport.ui.screens.chatlist.ChatListScreen
+import com.reyaz.chatsupport.ui.screens.userchat.UserChatScreen
 import com.reyaz.chatsupport.ui.theme.ChatSupportTheme
 import org.koin.core.context.startKoin
 
@@ -42,7 +45,10 @@ fun MainScreen(
         startDestination = ChatListNavigation,
     ) {
         composable<ChatListNavigation> {
-            ChatListScreen()
+            ChatListScreen { navController.navigate(UserChatNavigation(it)) }
+        }
+        composable<UserChatNavigation> {
+            UserChatScreen()
         }
     }
 }

@@ -12,7 +12,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 private fun repositoryModule() = module {
-    single<ChatRepository> { ChatRepositoryImpl(get()) }
+    single<ChatRepository> { ChatRepositoryImpl(get(), get(named("globalScope"))) }
 }
 
 private fun miscModule() = module {

@@ -8,6 +8,7 @@ import com.reyaz.chatsupport.domain.model.ChatUpdate
 import com.reyaz.chatsupport.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.getKoin
 
@@ -19,39 +20,20 @@ class ChatListViewModel : ViewModel() {
 
     init {
         fetchChatPreviewList()
-        createChatPreviewList()
-    }
-
-    private fun createChatPreviewList() {
-        viewModelScope.launch {
-            val chatPreviewList = repository.getChatList()
-            _chatPreviewList.emit(UiData.Success(chatPreviewList))
-        }
     }
 
     private fun fetchChatPreviewList() {
         viewModelScope.launch {
-            repository.getChatUpdates().collect { chatUpdate ->
-                when (chatUpdate) {
-                    is ChatUpdate.NewChatMessage -> {
-                        updateNewChatMessage(chatUpdate)
-                    }
-
-                    ChatUpdate.NotConnected -> {}
+            repository.chatUserList.collectLatest { chatUserList ->
+                val chatPreview = chatUserList.map {
+                    ChatPreview(
+                        userId = it.userId,
+                        userDisplayName = it.senderName,
+                        lastMessage = it.messages.firstOrNull()?.message,
+                    )
                 }
+                _chatPreviewList.emit(UiData.Success(chatPreview))
             }
         }
-    }
-
-    private suspend fun updateNewChatMessage(chatUpdate: ChatUpdate.NewChatMessage) {
-        val chatPreviewList = _chatPreviewList.value.dataOrNull?.toMutableList() ?: mutableListOf()
-        chatPreviewList.removeIf { it.userId == chatUpdate.userId }
-        val chatPreview = ChatPreview(
-            userId = chatUpdate.userId,
-            userDisplayName = chatUpdate.senderName,
-            lastMessage = chatUpdate.message,
-        )
-        chatPreviewList.add(0, chatPreview)
-        _chatPreviewList.emit(UiData.Success(chatPreviewList))
     }
 }

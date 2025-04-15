@@ -1,6 +1,7 @@
 package com.reyaz.chatsupport.ui.screens.chatlist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import com.reyaz.chatsupport.R
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +43,9 @@ import com.reyaz.chatsupport.ui.theme.TextColorPrimary
 import com.reyaz.chatsupport.ui.theme.TextColorSecondary
 
 @Composable
-fun ChatListScreen() {
+fun ChatListScreen(
+    onChatClick: (Int) -> Unit,
+) {
     val viewModel = viewModel<ChatListViewModel>()
     val chatPreviewUiData by viewModel.chatPreviewList.collectAsStateWithLifecycle()
     if (chatPreviewUiData is UiData.Error) {
@@ -67,15 +71,15 @@ fun ChatListScreen() {
                 count = chatPreviewUiData.dataOrNull?.size ?: 3,
                 key = { index -> chatPreviewUiData.dataOrNull?.getOrNull(index)?.userId ?: index },
             ) { index ->
+                val chatPreview = chatPreviewUiData.dataOrNull?.getOrNull(index)
                 ChatListItem(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = DefaultIconBg,
-                            shape = RoundedCornerShape(8.dp),
-                        )
-                        .padding(16.dp),
-                    chatPreview = chatPreviewUiData.dataOrNull?.getOrNull(index)
+                        .fillMaxWidth(),
+                    chatPreview = chatPreview,
+                    onClick = {
+                        chatPreview ?: return@ChatListItem
+                        onChatClick(chatPreview.userId)
+                    },
                 )
             }
         }
@@ -86,9 +90,17 @@ fun ChatListScreen() {
 private fun ChatListItem(
     modifier: Modifier = Modifier,
     chatPreview: ChatPreview?,
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .background(
+                color = DefaultIconBg,
+                shape = RoundedCornerShape(16.dp),
+            )
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
