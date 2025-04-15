@@ -5,12 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.reyaz.chatsupport.ui.navigation.ChatListNavigation
+import com.reyaz.chatsupport.ui.screens.ChatListScreen
 import com.reyaz.chatsupport.ui.theme.ChatSupportTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +20,26 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ChatSupportTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen(
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ChatSupportTheme {
-        Greeting("Android")
+fun MainScreen(
+    modifier: Modifier = Modifier
+) {
+    val navController = rememberNavController()
+    NavHost(
+        modifier = modifier,
+        navController = navController,
+        startDestination = ChatListNavigation,
+    ) {
+        composable<ChatListNavigation> {
+            ChatListScreen()
+        }
     }
 }
