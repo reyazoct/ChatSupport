@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reyaz.chatsupport.base.UiData
 import com.reyaz.chatsupport.domain.model.ChatPreview
-import com.reyaz.chatsupport.domain.model.ChatUpdate
+import com.reyaz.chatsupport.domain.model.UserReadStatus
 import com.reyaz.chatsupport.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,11 +25,13 @@ class ChatListViewModel : ViewModel() {
     private fun fetchChatPreviewList() {
         viewModelScope.launch {
             repository.chatUserList.collectLatest { chatUserList ->
-                val chatPreview = chatUserList.map {
+                val chatPreview = chatUserList.map { chatUser ->
+                    val unreadMessagesCount = chatUser.messages.count { it.userReadStatus == UserReadStatus.NotRead }
                     ChatPreview(
-                        userId = it.userId,
-                        userDisplayName = it.senderName,
-                        lastMessage = it.messages.firstOrNull()?.message,
+                        userId = chatUser.userId,
+                        userDisplayName = chatUser.senderName,
+                        lastMessage = chatUser.messages.firstOrNull()?.message,
+                        unreadMessagesCount = if (unreadMessagesCount == 0) null else unreadMessagesCount,
                     )
                 }
                 _chatPreviewList.emit(UiData.Success(chatPreview))

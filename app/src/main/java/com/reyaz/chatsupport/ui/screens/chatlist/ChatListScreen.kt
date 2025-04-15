@@ -41,6 +41,7 @@ import com.reyaz.chatsupport.ui.theme.DefaultIconBg
 import com.reyaz.chatsupport.ui.theme.DefaultIconColor
 import com.reyaz.chatsupport.ui.theme.TextColorPrimary
 import com.reyaz.chatsupport.ui.theme.TextColorSecondary
+import com.reyaz.chatsupport.ui.theme.TextColorWhite
 
 @Composable
 fun ChatListScreen(
@@ -130,6 +131,26 @@ private fun ChatListItem(
                     color = TextColorSecondary,
                 )
             )
+        }
+        val unreadMessageCount = chatPreview?.unreadMessagesCount?.toString()
+        if (unreadMessageCount != null) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(
+                        color = DefaultIconColor,
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = unreadMessageCount,
+                    style = LocalTextStyle.current.copy(
+                        color = TextColorWhite,
+                        fontSize = 12.sp
+                    )
+                )
+            }
         }
     }
 }

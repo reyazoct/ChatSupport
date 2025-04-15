@@ -7,8 +7,10 @@ import com.reyaz.chatsupport.domain.model.ChatMessageStatus
 import com.reyaz.chatsupport.domain.model.ChatUpdate
 import com.reyaz.chatsupport.domain.model.ChatUser
 import com.reyaz.chatsupport.domain.model.UserChatMessage
+import com.reyaz.chatsupport.domain.model.UserReadStatus
 import com.reyaz.chatsupport.domain.repository.ChatRepository
 import com.reyaz.chatsupport.system.NetworkMonitor
+import com.reyaz.chatsupport.util.replaceFirst
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,15 +18,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.getKoin
 
 class ChatRepositoryImpl(
     private val webSocketListener: ChatWebSocketListener,
     private val globalCoroutineScope: CoroutineScope,
-//    private val networkMonitor: NetworkMonitor,
+    private val networkMonitor: NetworkMonitor,
 ) : ChatRepository {
-
-    private val networkMonitor: NetworkMonitor by getKoin().inject()
 
     private val _chatUserList = MutableStateFlow(createChatUserList())
     override val chatUserList: Flow<List<ChatUser>>
@@ -73,6 +72,7 @@ class ChatRepositoryImpl(
     }
 
     private suspend fun updateNewChatMessage(message: ChatUpdate.NewChatMessage) {
+        if (message.userId == 0) return
         val oldList = _chatUserList.value.toMutableList()
         val chatUser = oldList.firstOrNull {
             message.userId == it.userId
@@ -118,6 +118,24 @@ class ChatRepositoryImpl(
         }
     }
 
+    override fun markAllAsRead(userId: Int) {
+        val oldList = _chatUserList.value.toMutableList()
+        val chatUser = oldList.firstOrNull {
+            userId == it.userId
+        }
+        if (chatUser == null) return
+        val newList = chatUser.messages.map {
+            if (it.userReadStatus == UserReadStatus.Read) it
+            else it.copy(userReadStatus = UserReadStatus.Read)
+        }
+        oldList.replaceFirst(chatUser.copy(messages = newList)) {
+            it == chatUser
+        }
+        globalCoroutineScope.launch {
+            _chatUserList.emit(oldList)
+        }
+    }
+
     private suspend fun updateMessageStatus(userId: Int, chatMessage: ChatMessage, succeeded: Boolean) {
         if (!succeeded) {
             failedChatMessage.add(userId to chatMessage)
@@ -127,11 +145,9 @@ class ChatRepositoryImpl(
             userId == it.userId
         }
         val messagesList = chatUser.messages.toMutableList()
-        val userChatMessageIndex = messagesList.indexOfFirst { it.message == chatMessage.message }
-        val userChatMessage = messagesList[userChatMessageIndex]
-        messagesList.removeAt(userChatMessageIndex)
-        val newUserChatMessage = userChatMessage.copy(status = if (succeeded) ChatMessageStatus.Success else ChatMessageStatus.Failed)
-        messagesList.add(userChatMessageIndex, newUserChatMessage)
+        val userChatMessage = messagesList.firstOrNull { it.message == chatMessage.message }
+        val newUserChatMessage = userChatMessage?.copy(status = if (succeeded) ChatMessageStatus.Success else ChatMessageStatus.Failed)
+        messagesList.replaceFirst(newUserChatMessage) { it == userChatMessage }
 
         val newChatUser = chatUser.copy(messages = messagesList)
         oldList.remove(chatUser)
@@ -149,6 +165,7 @@ class ChatRepositoryImpl(
             message = chatMessage.message,
             owner = ChatMessageOwner.You,
             status = ChatMessageStatus.Sending,
+            userReadStatus = UserReadStatus.Read,
         )
 
         val messagesList = chatUser.messages.toMutableList()

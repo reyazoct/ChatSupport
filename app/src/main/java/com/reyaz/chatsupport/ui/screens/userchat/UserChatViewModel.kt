@@ -29,6 +29,11 @@ class UserChatViewModel(
 
     init {
         fetchMessages()
+        markAllMessagesAsRead()
+    }
+
+    private fun markAllMessagesAsRead() {
+        repository.markAllAsRead(userId)
     }
 
     private fun fetchMessages() {

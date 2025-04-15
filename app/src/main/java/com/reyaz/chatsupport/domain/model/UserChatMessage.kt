@@ -4,4 +4,5 @@ data class UserChatMessage(
     val message: String,
     val owner: ChatMessageOwner,
     val status: ChatMessageStatus,
+    val userReadStatus: UserReadStatus = UserReadStatus.NotRead,
 )

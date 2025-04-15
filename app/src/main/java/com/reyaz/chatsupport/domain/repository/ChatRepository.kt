@@ -13,5 +13,7 @@ interface ChatRepository {
 
     fun sendMessage(userId: Int, chatMessage: ChatMessage)
 
+    fun markAllAsRead(userId: Int)
+
     val chatUserList: Flow<List<ChatUser>>
 }

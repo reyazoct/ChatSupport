@@ -20,7 +20,7 @@ fun <T> ErrorContent(
     ) {
         Text(
             modifier = Modifier,
-            text = "Something went wrong\n${errorData.throwable.message}",
+            text = errorData.throwable.message ?: "Something went wrong",
             style = LocalTextStyle.current.copy(
                 textAlign = TextAlign.Center,
             )

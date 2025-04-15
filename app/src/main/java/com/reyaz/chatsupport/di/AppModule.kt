@@ -18,7 +18,7 @@ private fun repositoryModule() = module {
         ChatRepositoryImpl(
             get(),
             get(named("globalScope")),
-//            get(),
+            get(),
         )
     }
 }
