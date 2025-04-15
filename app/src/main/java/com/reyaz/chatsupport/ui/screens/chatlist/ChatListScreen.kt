@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.reyaz.chatsupport.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +63,10 @@ fun ChatListScreen() {
                         .height(12.dp)
                 )
             }
-            items(chatPreviewUiData.dataOrNull?.size ?: 3) { index ->
+            items(
+                count = chatPreviewUiData.dataOrNull?.size ?: 3,
+                key = { index -> chatPreviewUiData.dataOrNull?.getOrNull(index)?.userId ?: index },
+            ) { index ->
                 ChatListItem(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -84,6 +89,7 @@ private fun ChatListItem(
 ) {
     Row(
         modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
@@ -105,8 +111,9 @@ private fun ChatListItem(
                     color = TextColorPrimary,
                 )
             )
+            val lastMessage = chatPreview?.lastMessage
             Text(
-                text = chatPreview?.lastMessage ?: "",
+                text = lastMessage ?: stringResource(R.string.tap_to_chat),
                 style = LocalTextStyle.current.copy(
                     color = TextColorSecondary,
                 )
