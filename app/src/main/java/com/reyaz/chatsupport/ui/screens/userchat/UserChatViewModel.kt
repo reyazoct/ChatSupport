@@ -1,5 +1,6 @@
 package com.reyaz.chatsupport.ui.screens.userchat
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,9 @@ class UserChatViewModel(
     private val _messagesList = MutableStateFlow<UiData<List<UserChatMessage>>>(UiData.Loading())
     val messagesList = _messagesList.asStateFlow()
 
+    private val _textFieldValue = MutableStateFlow(TextFieldValue())
+    val textFieldValue = _textFieldValue.asStateFlow()
+
     init {
         fetchMessages()
     }
@@ -35,6 +39,12 @@ class UserChatViewModel(
                     _messagesList.emit(UiData.Success(list))
                 }
             }
+        }
+    }
+
+    fun onTextChange(textFieldValue: TextFieldValue) {
+        viewModelScope.launch {
+            _textFieldValue.emit(textFieldValue)
         }
     }
 }

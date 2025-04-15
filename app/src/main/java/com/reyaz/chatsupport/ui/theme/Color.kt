@@ -18,3 +18,5 @@ val DefaultIconColor = Color(0xFF7F56D9)
 val UserMessageBg = Color(0xFFE5DDF7)
 val OtherMessageBg = Color(0xFFFFFFFF)
 val MessageBorderColor = Color(0xFFE5DDF7)
+
+val PrimaryColor = Color(0xFF7F56D9)
