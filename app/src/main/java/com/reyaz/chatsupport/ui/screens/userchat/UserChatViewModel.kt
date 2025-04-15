@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reyaz.chatsupport.base.UiData
+import com.reyaz.chatsupport.data.dto.ChatMessage
 import com.reyaz.chatsupport.domain.model.UserChatMessage
 import com.reyaz.chatsupport.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,18 @@ class UserChatViewModel(
     fun onTextChange(textFieldValue: TextFieldValue) {
         viewModelScope.launch {
             _textFieldValue.emit(textFieldValue)
+        }
+    }
+
+    fun sendMessage() {
+        viewModelScope.launch {
+            val newChatMessage = ChatMessage(
+                userId = 0,
+                senderName = "You",
+                message = _textFieldValue.value.text
+            )
+            repository.sendMessage(userId, newChatMessage)
+            _textFieldValue.emit(TextFieldValue())
         }
     }
 }

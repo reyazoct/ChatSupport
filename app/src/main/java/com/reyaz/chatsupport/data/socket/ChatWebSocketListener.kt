@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -19,8 +20,11 @@ class ChatWebSocketListener(
     private val _newChatUpdate = MutableStateFlow<ChatUpdate>(ChatUpdate.NotConnected)
     val newChatUpdate = _newChatUpdate.asStateFlow()
 
+    private lateinit var webSocket: WebSocket
+
     override fun onOpen(webSocket: WebSocket, response: Response) {
         super.onOpen(webSocket, response)
+        this.webSocket = webSocket
         webSocket.send("Hello from Android!")
     }
 
@@ -62,5 +66,9 @@ class ChatWebSocketListener(
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         super.onClosed(webSocket, code, reason)
         Log.d("WebSocket", "Closed: $code / $reason")
+    }
+
+    fun sendMessage(chatMessage: ChatMessage): Boolean {
+        return webSocket.send(Json.encodeToString(chatMessage))
     }
 }
