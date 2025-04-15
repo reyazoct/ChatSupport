@@ -5,4 +5,5 @@
     <string name="failed">Failed</string>
     <string name="sending">Sending</string>
     <string name="sent">Sent</string>
+    <string name="no_internet_connection">No internet connection</string>
 </resources>

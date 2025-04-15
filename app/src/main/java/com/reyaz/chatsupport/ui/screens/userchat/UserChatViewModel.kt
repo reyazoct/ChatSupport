@@ -25,16 +25,10 @@ class UserChatViewModel(
     private val userId by lazy { checkNotNull(savedStateHandle.get<Int>("userId")) }
     private val repository: ChatRepository by getKoin().inject()
     private val networkMonitor: NetworkMonitor by getKoin().inject()
+    val isConnected = networkMonitor.isConnected
 
     private val _messagesList = MutableStateFlow<UiData<List<UserChatMessage>>>(UiData.Loading())
-    val messagesList = _messagesList.combine(networkMonitor.isConnected) { uiData, isConnected ->
-        if (!isConnected) UiData.Error(Exception("No internet connection"))
-        else uiData
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
-        initialValue = UiData.Loading(),
-    )
+    val messagesList = _messagesList.asStateFlow()
 
     private val _textFieldValue = MutableStateFlow(TextFieldValue())
     val textFieldValue = _textFieldValue.asStateFlow()

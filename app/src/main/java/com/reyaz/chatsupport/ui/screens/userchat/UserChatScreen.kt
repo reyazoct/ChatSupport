@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,6 +60,8 @@ fun UserChatScreen() {
     ) {
         val viewModel = viewModel<UserChatViewModel>()
         val messageListUiData by viewModel.messagesList.collectAsStateWithLifecycle()
+        val isConnected by viewModel.isConnected.collectAsStateWithLifecycle()
+
         if (messageListUiData is UiData.Error) {
             ErrorContent(
                 modifier = Modifier
@@ -82,19 +85,35 @@ fun UserChatScreen() {
                 ),
                 reverseLayout = true,
             ) {
-                item {
-                    Spacer(
-                        Modifier
-                            .windowInsetsPadding(WindowInsets.statusBars)
-                            .height(16.dp)
-                    )
+                if (!isConnected) {
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .windowInsetsPadding(WindowInsets.statusBars),
+                            text = stringResource(R.string.no_internet_connection),
+                            style = LocalTextStyle.current.copy(
+                                textAlign = TextAlign.Center,
+                                fontSize = 10.sp,
+                            )
+                        )
+                    }
                 }
+
                 items(
                     messageList?.size ?: 3,
                 ) {
                     ChatItem(
                         modifier = Modifier.fillMaxWidth(),
                         userChatMessage = messageList?.getOrNull(it),
+                    )
+                }
+
+                item {
+                    Spacer(
+                        Modifier
+                            .windowInsetsPadding(WindowInsets.statusBars)
+                            .height(16.dp)
                     )
                 }
             }
