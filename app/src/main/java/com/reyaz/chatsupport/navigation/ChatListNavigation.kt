@@ -1,4 +1,4 @@
-package com.reyaz.chatsupport.ui.navigation
+package com.reyaz.chatsupport.navigation
 
 import kotlinx.serialization.Serializable
 

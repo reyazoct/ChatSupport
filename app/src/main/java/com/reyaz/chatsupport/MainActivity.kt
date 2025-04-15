@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.reyaz.chatsupport.ui.navigation.ChatListNavigation
-import com.reyaz.chatsupport.ui.screens.ChatListScreen
+import com.reyaz.chatsupport.navigation.ChatListNavigation
+import com.reyaz.chatsupport.ui.screens.chatlist.ChatListScreen
 import com.reyaz.chatsupport.ui.theme.ChatSupportTheme
 
 class MainActivity : ComponentActivity() {
