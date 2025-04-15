@@ -1,4 +1,4 @@
-package com.reyaz.chatsupport.data.model
+package com.reyaz.chatsupport.domain.model
 
 data class ChatPreview(
     val userDisplayName: String,

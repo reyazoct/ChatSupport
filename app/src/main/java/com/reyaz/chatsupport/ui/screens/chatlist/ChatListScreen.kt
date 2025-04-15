@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.reyaz.chatsupport.base.UiData
-import com.reyaz.chatsupport.data.model.ChatPreview
+import com.reyaz.chatsupport.domain.model.ChatPreview
 import com.reyaz.chatsupport.ui.common.ErrorContent
 import com.reyaz.chatsupport.ui.theme.DefaultIconBg
 import com.reyaz.chatsupport.ui.theme.DefaultIconColor
@@ -61,7 +61,7 @@ fun ChatListScreen() {
                         .height(12.dp)
                 )
             }
-            items(2) {
+            items(chatPreviewUiData.dataOrNull?.size ?: 3) { index ->
                 ChatListItem(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -69,7 +69,8 @@ fun ChatListScreen() {
                             color = DefaultIconBg,
                             shape = RoundedCornerShape(8.dp),
                         )
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    chatPreview = chatPreviewUiData.dataOrNull?.getOrNull(index)
                 )
             }
         }
@@ -78,7 +79,8 @@ fun ChatListScreen() {
 
 @Composable
 private fun ChatListItem(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    chatPreview: ChatPreview?,
 ) {
     Row(
         modifier = modifier,
@@ -91,12 +93,12 @@ private fun ChatListItem(
                     shape = CircleShape,
                 )
         )
-        Spacer(Modifier.width(  16.dp))
+        Spacer(Modifier.width(16.dp))
         Column(
             modifier = Modifier.weight(1F),
         ) {
             Text(
-                text = "Sales BOT",
+                text = chatPreview?.userDisplayName ?: "",
                 style = LocalTextStyle.current.copy(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -104,7 +106,7 @@ private fun ChatListItem(
                 )
             )
             Text(
-                text = "Hello, How are you",
+                text = chatPreview?.lastMessage ?: "",
                 style = LocalTextStyle.current.copy(
                     color = TextColorSecondary,
                 )
