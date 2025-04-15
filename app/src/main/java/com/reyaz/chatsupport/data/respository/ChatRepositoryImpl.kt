@@ -8,24 +8,29 @@ import com.reyaz.chatsupport.domain.model.ChatUpdate
 import com.reyaz.chatsupport.domain.model.ChatUser
 import com.reyaz.chatsupport.domain.model.UserChatMessage
 import com.reyaz.chatsupport.domain.repository.ChatRepository
+import com.reyaz.chatsupport.system.NetworkMonitor
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
+import org.koin.java.KoinJavaComponent.getKoin
 
 class ChatRepositoryImpl(
     private val webSocketListener: ChatWebSocketListener,
     private val globalCoroutineScope: CoroutineScope,
+//    private val networkMonitor: NetworkMonitor,
 ) : ChatRepository {
+
+    private val networkMonitor: NetworkMonitor by getKoin().inject()
 
     private val _chatUserList = MutableStateFlow(createChatUserList())
     override val chatUserList: Flow<List<ChatUser>>
         get() = _chatUserList.asStateFlow()
+
+    private val failedChatMessage = mutableListOf<Pair<Int, ChatMessage>>()
 
     init {
         setupCollectors()
@@ -44,6 +49,26 @@ class ChatRepositoryImpl(
                     }
                 }
             }
+        }
+        globalCoroutineScope.launch {
+            networkMonitor.start()
+            networkMonitor.isConnected.collectLatest {
+                if (it) {
+                    webSocketListener.startService()
+                    trySendingAgain()
+                }
+            }
+        }
+    }
+
+    private suspend fun trySendingAgain() {
+        if (failedChatMessage.isEmpty()) return
+        val (userId, chatMessage) = failedChatMessage.first()
+        val succeeded = webSocketListener.sendMessage(chatMessage)
+        if (succeeded) {
+            failedChatMessage.removeFirstOrNull()
+            updateMessageStatus(userId, chatMessage, true)
+            trySendingAgain()
         }
     }
 
@@ -94,6 +119,9 @@ class ChatRepositoryImpl(
     }
 
     private suspend fun updateMessageStatus(userId: Int, chatMessage: ChatMessage, succeeded: Boolean) {
+        if (!succeeded) {
+            failedChatMessage.add(userId to chatMessage)
+        }
         val oldList = _chatUserList.value.toMutableList()
         val chatUser = oldList.first {
             userId == it.userId
